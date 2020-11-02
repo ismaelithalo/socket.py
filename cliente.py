@@ -2,8 +2,6 @@
 
 import socket
 
-
-
 CLIENTE = socket.socket(
         socket.AF_INET,                         # socket.AF_INET - Familia IPV4
         socket.SOCK_STREAM                      # socket.SOCK_STREAM - Protocolo FTP
