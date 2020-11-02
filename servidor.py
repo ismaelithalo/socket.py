@@ -5,7 +5,7 @@ import socket
 HOST_SERVIDOR = '127.0.0.1'                         # IP local
 PORTA_SERVIDOR = 11500                              # Porta livre para uso
 
-SERVIDOR = socket.socket(
+SERVIDOR = socket.socket(                           # Cria o socket
             socket.AF_INET,                         # socket.AF_INET - Familia IPV4
             socket.SOCK_STREAM                      # socket.SOCK_STREAM - Protocolo TCP
             )
