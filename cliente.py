@@ -44,7 +44,7 @@ while True:
                         print('\nDigite MAIL <usuario> <senha> <from> <to> <subject> <texto>.')
                         mail = input()
                         prot, user, senha, remet, dest, assun, texto = mail.split(' ')
-                        CLIENTE.sendall(imap.encode())
+                        #CLIENTE.sendall(imap.encode())
                         
                 resposta = CLIENTE.recv(2048)                                   # Recv ou receive, recebe o dado vindo da conexao com o cliente, 2048 é o buffer recomendado
                 print('Resposta: \n{}'.format(resposta.decode()))
