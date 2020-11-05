@@ -4,7 +4,7 @@ import socket
 
 HOST_SERVIDOR = '127.0.0.1'                         # IP local
 PORTA_SERVIDOR = 11500                              # Porta livre para uso
-CAMINHO_PASTA = '/home/ismael/fr20201g04'           # Pasta com os arquivos de teste
+CAMINHO_PASTA = 'C://Users/PC/fr20201g04'           # Pasta com os arquivos de teste
 
 
 SERVIDOR = socket.socket(                           # Cria o socket
