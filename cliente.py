@@ -41,10 +41,31 @@ while True:
                         CLIENTE.sendall(imap.encode())
                 
                 elif (PROTOCOLO == "MAIL" or PROTOCOLO == "SMTP"):
+                        CLIENTE.sendall(PROTOCOLO.encode())
                         print('\nDigite MAIL <usuario> <senha> <from> <to> <subject> <texto>.')
                         mail = input()
                         prot, user, senha, remet, dest, assun, texto = mail.split(' ')
-                        #CLIENTE.sendall(imap.encode())
+                        request = user+';'+senha
+                        CLIENTE.sendall(request.encode())
+                        response = CLIENTE.recv(2048).decode()
+                        print(response)
+                        response_code, resto = response.split(' ')
+                        if (response_code == 401 or response_code == 404):
+                                break
+                        aux, cmail = remet.split('@')
+                        CLIENTE.sendall(b'HELO '+cmail.encode())
+                        print(CLIENTE.recv(2048).decode())
+                        CLIENTE.sendall(b'MAIL FROM: <'+remet.encode()+b'>')
+                        print(CLIENTE.recv(2048).decode())
+                        CLIENTE.sendall(b'RCPT TO: <'+dest.encode()+b'>')
+                        print(CLIENTE.recv(2048).decode())
+                        CLIENTE.sendall(b'DATA')
+                        print(CLIENTE.recv(2048).decode())
+                        CLIENTE.sendall(texto.encode())
+                        CLIENTE.sendall(b'.')
+                        print(CLIENTE.recv(2048).decode())
+                        CLIENTE.sendall(b'QUIT')
+                        print(CLIENTE.recv(2048).decode())
                         
                 resposta = CLIENTE.recv(2048)                                   # Recv ou receive, recebe o dado vindo da conexao com o cliente, 2048 é o buffer recomendado
                 print('Resposta: \n{}'.format(resposta.decode()))

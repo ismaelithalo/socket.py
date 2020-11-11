@@ -46,8 +46,60 @@ while True:
                         print('404 Not Found:')
                         print(request)
         
-        elif (PROTOCOLO == "SMTP" or PROTOCOLO == "MAIL"):
-            print("SMTP")
+        elif (PROTOCOLO == "SMTP" or PROTOCOLO == "MAIL"):  # Se o protocolo for SMTP
+            request = HOST_CLIENTE.recv(2048).decode()
+            user, senha = request.split(';')
+            
+            print("\nRequisiçao recebida.")
+            
+            with open(CAMINHO_PASTA+'/usuarios.txt') as file:   # Abre o arquivo de usuarios
+                usuarios = file.read().split('\n')              # Separa os itens do arquivo pelas linhas
+                ver = True
+                for x in range(len(usuarios)):                  # For com o numero de linhas do arquivo   
+                    u = usuarios[x].split(';')                  # Separa a linha do arquivo em u[0] usuario e u[1] senha
+                    if (u[0]== user): 
+                        ver = False# Verifica se o usuario vindo da requisiçao existe no arquivo
+                        if(u[1]== senha):                       # Verifica se a senha da requisiçao eh a senha do arquivo
+                            HOST_CLIENTE.sendall(b'220 localhost') 
+                            msg1 = HOST_CLIENTE.recv(2048).decode()         # Inicio da 'conversa' entre servidor e cliente
+                            aux, cmail = msg1.split(' ')
+                            print('\n'+msg1)
+                            HOST_CLIENTE.sendall(b'250 Hello '+cmail.encode()+b', pleased to meet you')                 #Envia mensagem de resposta codificada
+                            msg2 = HOST_CLIENTE.recv(2048).decode()
+                            print(msg2)
+                            msg2r = msg2.replace(">", "")
+                            msg2r = msg2r.replace("<", ";")
+                            msg2r_1, email = msg2r.split(';')
+                            HOST_CLIENTE.sendall(b'250 '+email.encode()+b'... Sender ok')
+                            msg3 = HOST_CLIENTE.recv(2048).decode()
+                            print(msg3)
+                            msg3r = msg3.replace(">", "")
+                            msg3r = msg3r.replace("<", ";")
+                            msg3r_1, dest = msg3r.split(';')
+                            HOST_CLIENTE.sendall(b'250 '+dest.encode()+b'... Recipient ok')
+                            print(HOST_CLIENTE.recv(2048).decode())
+                            HOST_CLIENTE.sendall(b'354 Enter mail, end with "." on a line by itself')
+                            msg4 = HOST_CLIENTE.recv(2048).decode()
+                            if (msg4 == '.'):
+                                HOST_CLIENTE.sendall(b'250 Message accepted for delivery')
+                            else:
+                                with open(CAMINHO_PASTA+'/email/'+user+'.txt', 'a') as user_file:
+                                    text = ';'+msg4
+                                    user_file.write(text)
+                                HOST_CLIENTE.sendall(b'250 Message accepted for delivery')
+                                print(HOST_CLIENTE.recv(2048).decode())
+                                
+                            print(HOST_CLIENTE.recv(2048).decode())
+                            HOST_CLIENTE.sendall(b'221 localhost closing connection')
+                            
+                        else:
+                            HOST_CLIENTE.sendall(b'401 Senha_incorreta\n')                      # Retorna senha incorreta pro cliente
+                            print('Resposta enviada.\n')
+                if (ver):    
+                    HOST_CLIENTE.sendall(b'404 Usuario_nao_encontrado\n')                       # Retorna usuario nao encontrado pro cliente
+                else:
+                    HOST_CLIENTE.sendall(b'200 OK')       
+                print('Resposta enviada.\n')
             
         elif (PROTOCOLO == "IMAP"):                         # Se o protocolo for HTTP
             request = HOST_CLIENTE.recv(2048).decode()      # Recebe os proximos parametros
