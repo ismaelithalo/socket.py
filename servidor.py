@@ -1,8 +1,25 @@
 #!/usr/bin/env python3
 
 import socket
+import socket
+#import pyftpdlib
+from os import listdir
+from os.path import isfile, join
 
-HOST_SERVIDOR = '127.0.0.1'                         # IP local
+
+#servidor
+
+def receber():
+    msg = HOST_CLIENTE.recv(2048)             # Recv ou receive, recebe o dado vindo da conexao com o cliente, 2048 é o buffer recomendado
+    if (msg):
+        msgdecod = msg.decode()
+        return msgdecod
+            
+def enviar(msg):
+    HOST_CLIENTE.sendall(msg.encode())
+
+
+HOST_SERVIDOR = '127.0.0.1'                      # IP local
 PORTA_SERVIDOR = 11500                              # Porta livre para uso
 CAMINHO_PASTA = 'C://Users/PC/fr20201g04'           # Pasta com os arquivos de teste
 
@@ -83,7 +100,7 @@ while True:
                             if (msg4 == '.'):
                                 HOST_CLIENTE.sendall(b'250 Message accepted for delivery')
                             else:
-                                with open(CAMINHO_PASTA+'/email/'+user+'.txt', 'a') as user_file:
+                                with open(CAMINHO_PASTA+'/email/'+user+'.txt', 'a') as user_file: #abre o arquivo caixa de email do usuário
                                     text = ';'+msg4
                                     user_file.write(text)
                                 HOST_CLIENTE.sendall(b'250 Message accepted for delivery')
@@ -123,5 +140,49 @@ while True:
                             print('Resposta enviada.\n')
                     
                 HOST_CLIENTE.sendall(b'Usuario nao encontrado\n')                           # Retorna usuario nao encontrado pro cliente
-                print('Resposta enviada.\n')   
+                print('Resposta enviada.\n')
+                
+        elif (PROTOCOLO == 'FTP'):
+            input_usuario=receber()
+            print ('usuario: '+input_usuario+'\n')
+            
+            with open (CAMINHO_PASTA+'/usuarios.txt') as file:
+                usuarios=file.read().split('\n') #abre o arquivo de usuarios 
+            
+            ver = True   
+            for x in range(len(usuarios)):
+                u=usuarios[x].split(';') # salva usuario e sanha num array para verificar existencia
+                if (u[0]== input_usuario): #se usuario encontrado
+                    ver = False
+                    print ("usuario encontrado, solicitando senha\n")
+                    HOST_CLIENTE.sendall(b'331 Username OK, password required') #mensagem de sucesso
+                    input_senha = receber () #solicita senha
+                    if (u[1] == input_senha): #compara senha com salva no servidor
+                        print ("senha corresponde\n")
+                        rota = CAMINHO_PASTA+'/html/'
+                        pasta = [f for f in listdir(rota) if isfile(join(rota, f))]
+                        pasta = ' '.join(pasta)
+                        enviar (pasta)      #senha corresponde; hora de enviar lista de arquivos disponíveis          
+                        nomecomando = receber()
+                        comando,nome=nomecomando.split(' ')
+                        rota = 'C://Users/PC/fr20201g04/servidor'+'/html/' + nome
+                        if (comando=='RETR'): #comando retr
+                            with open(rota) as file:
+                                text = file.read()
+                                file.close()
+                                enviar(text)
+                            print ("arquivo enviado")
+                        elif (comando == 'STOR'): #comando stor
+                            with open(rota,"a") as file:
+                                file.write(receber())
+                                enviar ('arquivo gravado')
+                            print ("arquivo recebido")
+                    else:
+                            enviar ('senha incorreta')
+                            print ("senha nao corresponde\n")
+            if (ver):    
+                HOST_CLIENTE.sendall(b'404 Usuario_nao_encontrado\n')                       # Retorna usuario nao encontrado pro cliente
+            else:
+                HOST_CLIENTE.sendall(b'200 OK')
+            print('Resposta enviada.\n')
                 
